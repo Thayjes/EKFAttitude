@@ -4,7 +4,8 @@ function [ x_updated, P_updated ] = EKF_Update(x_curr, P_curr, y_hat, y_curr)
 %   Detailed explanation goes here
 %Parameters (TBD):
 %1. R: Measurement Noise Covariance Matrix
-H = get_H_jacobian(x_curr);
+R = 0.1*eye(3);
+H = get_H_jacobian(x_curr); %%Check the jacobian, imaginary values?
 K = P_curr*H'/(H*P_curr*H' + R);
 x_updated = x_curr + K*(y_curr - y_hat);
 P_updated = (eye(7) - K*H)*P_curr;

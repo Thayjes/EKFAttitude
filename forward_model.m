@@ -27,11 +27,11 @@ function [x_curr, P_curr] = forward_model(x_prev, P_prev, w)
 % b(k) = [bx by bz]'
 % n_q(k) = process noise vector for q(k)
 % n_b(k) = process noise vector for b(k)
-
-
+Q = 0.1*eye(7);
+dt = 0.04;
 q_prev = x_prev(1:4);
 b_prev = x_prev(5:7);
-n_prev = mvnrnd(0, Q)'; %Process Noise Vector
+n_prev = mvnrnd(zeros(7,1), Q)'; %Process Noise Vector
 n_q = n_prev(1:4);
 n_b = n_prev(5:7);
 skew_matrix = skew(w, b_prev);

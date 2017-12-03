@@ -1,16 +1,34 @@
-function [agps, vgps] = vel_and_acc(gps, t)
-%UNTITLED10 Summary of this function goes here
-%   Detailed explanation goes here
-xm = gps(:, 1);
-ym = gps(:, 2);
-zm = gps(:, 3);
+function [agps, vgps] = vel_and_acc(pos, t)
+%UNTITLED10 Calculates the acceleration and velocity of the body from the
+%GPS masurements.
+% The x, y and z co-ordinates are already assumed to be available in meters
+% at this stage. We then differentiate the positions to get the velocities.
+% We average the velocity over each time interval to get a better estimate.
+% We then differentiate the averaged velocity to get the accelerations.
+% Which are again averaged for the same reason. 
+xm = pos(:, 1);
+ym = pos(:, 2);
+zm = pos(:, 3);
+
 vx = diff(xm) ./ diff(t);
 vy = diff(ym) ./ diff(t);
 vz = diff(zm) ./ diff(t);
-ax = diff(vx) ./ diff(t(2:end));
-ay = diff(vy) ./ diff(t(2:end));
-az = diff(vz) ./ diff(t(2:end));
-vgps = [vx vy vz];
-agps = [ax ay az];
+avg_vx = mean([vx(1:end-1)';vx(2:end)'])';
+%Like avg_vx = [avg_vx(1) avg_vx avg_vx(end)]; ?
+avg_vy = mean([vy(1:end-1)';vy(2:end)'])';
+avg_vz = mean([vz(1:end-1)';vz(2:end)'])';
+% After differencing and averaging velocities we lose the velocity at two
+% instances of time, the first and the last.
+ax = diff(avg_vx) ./ diff(t(2:end-1));
+ay = diff(avg_vy) ./ diff(t(2:end-1));
+az = diff(avg_vz) ./ diff(t(2:end-1));
+avg_ax = mean([ax(1:end-1)';ax(2:end)'])';
+avg_ay = mean([ay(1:end-1)';ay(2:end)'])';
+avg_az = mean([az(1:end-1)';az(2:end)'])';
+%Similarly we lose another two for acceleration, two at the start and two
+%from the end. % We can maybe make some assumption of the acceleration at
+%those times.
+vgps = [avg_vx avg_vy avg_vz];
+agps = [avg_ax avg_ay avg_az];
 end
 
