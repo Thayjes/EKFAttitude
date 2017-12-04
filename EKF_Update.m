@@ -4,7 +4,7 @@ function [ x_updated, P_updated ] = EKF_Update(x_curr, P_curr, y_hat, y_curr)
 %   Detailed explanation goes here
 %Parameters (TBD):
 %1. R: Measurement Noise Covariance Matrix
-dt = 0.04;
+dt = 0.004;
 R = 100*eye(3) / dt;
 H = get_H_jacobian(x_curr); %%Check the jacobian, imaginary values?
 if(~isreal(H))

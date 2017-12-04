@@ -21,6 +21,7 @@ tgps_reduced = tgps(1:end-3);
 %% Running the filter
 tstim_index = 1;
 tgps_index = 1;
+with_measurement = 0;
 % Create an array to store trajectory of the state. Can be used later.
 X = [];
 % Initialize the quaternion state using the first measurement obtained at
@@ -36,6 +37,7 @@ while(tstim_index < length(tstim) - 1)
     tgps_curr = tgps_reduced(tgps_index);
     % Check if the stim time has passed the gps time, if yes, then
     % incorporate the "measurement" which has arrived.
+    if(with_measurement == 1)
     if(tstim_curr > tgps_curr)
         %calculate a measurement based on average astim at tstim_index and
         %tstim_index - 1
@@ -63,6 +65,7 @@ while(tstim_index < length(tstim) - 1)
         x_updated = x_pred;
         x_updated = normalize_quaternion(x_updated);
         P_updated = P_pred;
+    end
     end
     %x_updated = x_pred;
     %P_updated = P_pred;
