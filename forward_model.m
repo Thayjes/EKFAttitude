@@ -27,7 +27,7 @@ function [x_curr, P_curr] = forward_model(x_prev, P_prev, w)
 % b(k) = [bx by bz]'
 % n_q(k) = process noise vector for q(k)
 % n_b(k) = process noise vector for b(k)
-Q = 0.1*eye(7);
+Q = 0.01*eye(7);
 dt = 0.04;
 q_prev = x_prev(1:4);
 b_prev = x_prev(5:7);
@@ -44,13 +44,13 @@ w_rev(3) = -w_rev(3);
 omega = 0.5*[skew_matrix w_rev; -w_rev' 0];
 
 % Implement the forward model equations
-q_curr = q_prev + omega*q_prev*dt + n_q; % Is there n_q here?
-b_curr = b_prev + n_b;
+q_curr = q_prev + omega*q_prev*dt; %+ n_q; % Is there n_q here?
+b_curr = b_prev; %+ n_b;
 % Implement the propagation of covariance matrix
 A = get_jacobian(x_prev, w);
 %Define the  state transition matrix using taylor series approximation
 F = eye(7) + A*dt;
-P_curr = F*P_prev*F' + Q;
+P_curr = F*P_prev*F' + Q*dt
 
 x_curr = [q_curr; b_curr];
 
