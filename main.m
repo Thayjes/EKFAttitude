@@ -17,7 +17,7 @@ load('E:\Visnav Flight Data\20170719_Upper_Flight1\all.mat');
 disp('Number of velocity measurements = '), disp(length(vgps));
 disp('Number of acceleration measurements = '), disp(length(agps));
 vgps_reduced = vgps(1:end-2, :);
-tgps_reduced = tgps(1:end-3);
+tgps_reduced = tgps(1:end-4);
 %% Running the filter
 tstim_index = 1;
 tgps_index = 1;

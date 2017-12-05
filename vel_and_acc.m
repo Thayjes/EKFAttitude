@@ -9,26 +9,23 @@ function [agps, vgps] = vel_and_acc(pos, t)
 xm = pos(:, 1);
 ym = pos(:, 2);
 zm = pos(:, 3);
-% Averaging the x, y and z co-ordinates.
-avg_xm = mean([xm(1:end-1)';xm(2:end)'])';
-avg_ym = mean([ym(1:end-1)';ym(2:end)'])';
-avg_zm = mean([zm(1:end-1)';zm(2:end)'])';
-vx = diff(avg_xm) ./ diff(t(1:end-1));
-vy = diff(avg_ym) ./ diff(t(1:end-1));
-vz = diff(avg_zm) ./ diff(t(1:end-1));
+% Calculate velocity using the position data
+vx = diff(xm) ./ diff(t(1:end));
+vy = diff(ym) ./ diff(t(1:end));
+vz = diff(zm) ./ diff(t(1:end));
 avg_vx = mean([vx(1:end-1)';vx(2:end)'])';
 %Like avg_vx = [avg_vx(1) avg_vx avg_vx(end)]; ?
 avg_vy = mean([vy(1:end-1)';vy(2:end)'])';
 avg_vz = mean([vz(1:end-1)';vz(2:end)'])';
 % After differencing and averaging velocities we lose the velocity at two
-% instances of time, the first and the last.
-ax = diff(avg_vx) ./ diff(t(1:end-3));
-ay = diff(avg_vy) ./ diff(t(1:end-3));
-az = diff(avg_vz) ./ diff(t(1:end-3));
+% instances of time, the last two.
+ax = diff(avg_vx) ./ diff(t(1:end-2));
+ay = diff(avg_vy) ./ diff(t(1:end-2));
+az = diff(avg_vz) ./ diff(t(1:end-2));
 avg_ax = mean([ax(1:end-1)';ax(2:end)'])';
 avg_ay = mean([ay(1:end-1)';ay(2:end)'])';
 avg_az = mean([az(1:end-1)';az(2:end)'])';
-%Similarly we lose another two for acceleration, two at the start and two
+%Similarly we lose another two for acceleration, two
 %from the end. % We can maybe make some assumption of the acceleration at
 %those times.
 vgps = [avg_vx avg_vy avg_vz];
