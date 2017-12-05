@@ -21,7 +21,7 @@ tgps_reduced = tgps(1:end-4);
 %% Running the filter
 tstim_index = 1;
 tgps_index = 1;
-with_measurement = 0;
+with_measurement = 1;
 % Create an array to store trajectory of the state. Can be used later.
 X = [];
 % Initialize the quaternion state using the first measurement obtained at

@@ -23,7 +23,7 @@ agps_z = agps(tgps_index, 3);
 
 rx = -( cos(heading)*agps_x + sin(heading)*agps_y );
 ry = -( -sin(heading)*agps_x + cos(heading)*agps_y );
-rz = 9.8 - agps_z;
+rz = -9.8 - agps_z;
 
 
 sigma_theta = (rx*astim_x + rz*( (rx^2 + rz^2 - astim_x.^2)^(0.5) ) ) / (rx^2 + rz^2);
