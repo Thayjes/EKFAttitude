@@ -22,13 +22,13 @@ avg_vz = mean([vz(1:end-1)';vz(2:end)'])';
 ax = diff(avg_vx) ./ diff(t(1:end-2));
 ay = diff(avg_vy) ./ diff(t(1:end-2));
 az = diff(avg_vz) ./ diff(t(1:end-2));
-avg_ax = mean([ax(1:end-1)';ax(2:end)'])';
-avg_ay = mean([ay(1:end-1)';ay(2:end)'])';
-avg_az = mean([az(1:end-1)';az(2:end)'])';
+%avg_ax = mean([ax(1:end-1)';ax(2:end)'])';
+%avg_ay = mean([ay(1:end-1)';ay(2:end)'])';
+%avg_az = mean([az(1:end-1)';az(2:end)'])';
 %Similarly we lose another two for acceleration, two
 %from the end. % We can maybe make some assumption of the acceleration at
 %those times.
 vgps = [avg_vx avg_vy avg_vz];
-agps = [avg_ax avg_ay avg_az];
+agps = [ax ay az];
 end
 

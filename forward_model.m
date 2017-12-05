@@ -50,7 +50,7 @@ b_curr = b_prev; %+ n_b;
 A = get_jacobian(x_prev, w);
 %Define the  state transition matrix using taylor series approximation
 F = eye(7) + A*dt;
-P_curr = F*P_prev*F' + Q*dt
+P_curr = F*P_prev*F' + Q*dt % Should this be P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt??
 
 x_curr = [q_curr; b_curr];
 

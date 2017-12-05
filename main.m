@@ -17,7 +17,7 @@ load('E:\Visnav Flight Data\20170719_Upper_Flight1\all.mat');
 disp('Number of velocity measurements = '), disp(length(vgps));
 disp('Number of acceleration measurements = '), disp(length(agps));
 vgps_reduced = vgps(1:end-2, :);
-tgps_reduced = tgps(1:end-4);
+tgps_reduced = tgps(1:end-3);
 %% Running the filter
 tstim_index = 1;
 tgps_index = 1;
@@ -30,7 +30,7 @@ X = [];
 % yaw.
 q_init = [0.6191, 0.2736, 0.0635, 0.7334];
 x_pred = [q_init 0 0 0]'; 
-P_pred = 1e-3*eye(7); %This might have to be tuned.
+P_pred = diag([0.1 0.1 0.1 0.1 0 0 0]); % Taken from references of the paper
 
 while(tstim_index < length(tstim) - 1)
     tstim_curr = tstim(tstim_index); 
