@@ -27,13 +27,13 @@ function [x_curr, P_curr] = forward_model(x_prev, P_prev, w)
 % b(k) = [bx by bz]'
 % n_q(k) = process noise vector for q(k)
 % n_b(k) = process noise vector for b(k)
-Q = 0.01*eye(7);
+Q = 1e-2*eye(7);
 dt = 0.004;
 q_prev = x_prev(1:4);
 b_prev = x_prev(5:7);
-n_prev = mvnrnd(zeros(7,1), Q)'; %Process Noise Vector
-n_q = n_prev(1:4);
-n_b = n_prev(5:7);
+%n_prev = mvnrnd(zeros(7,1), Q)'; %Process Noise Vector
+%n_q = n_prev(1:4);
+%n_b = n_prev(5:7);
 skew_matrix = skew(w, b_prev);
 %The skew matrix is the the first 3 rows and columns of omega
 w_corr = w - b_prev; %The corrected angular rates
@@ -50,8 +50,8 @@ b_curr = b_prev; %+ n_b;
 A = get_jacobian(x_prev, w);
 %Define the  state transition matrix using taylor series approximation
 F = eye(7) + A*dt;
-P_curr = F*P_prev*F' + Q*dt % Should this be P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt??
-
+%P_curr = F*P_prev*F' + Q*dt % Should this be P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt??
+P_curr = P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt
 x_curr = [q_curr; b_curr];
 
 

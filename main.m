@@ -1,6 +1,6 @@
 %% LOAD DATA
 % Load the gps and imu tables.
-load('E:\Visnav Flight Data\20170719_Upper_Flight1\all.mat');
+load('E:\Visnav Flight Data\20170815_DPG_Flight1\all.mat');
 % Get pos = [x y z], and tgps.
 [pos, tgps] = load_gps_meters(gps);
 % Get acceleration and angular rates from the imu as well as the times.
@@ -13,11 +13,20 @@ load('E:\Visnav Flight Data\20170719_Upper_Flight1\all.mat');
 % Y = RPY_measurements(acc_stim, pos, tgps, tstim);
 % Here we create velocity and acceleration measurements using the GPS
 % position measurements.
+%tgps = tgps(5150:end);
+%tstim = tstim(130245:end);
+ax_stim = acc_stim(:, 1);
+%ax_stim = ax_stim(130425:end);
+ay_stim = acc_stim(:, 2);
+%ay_stim = ay_stim(130425:end);
+az_stim = acc_stim(:, 3);
+%az_stim = az_stim(130425:end);
+acc_stim = [ax_stim ay_stim az_stim];
 [agps, vgps] = vel_and_acc(pos, tgps);
 disp('Number of velocity measurements = '), disp(length(vgps));
 disp('Number of acceleration measurements = '), disp(length(agps));
-vgps_reduced = vgps(1:end-2, :);
-tgps_reduced = tgps(1:end-3);
+vgps_reduced = vgps(2:end-1, :);
+tgps_reduced = tgps(3:end-2);
 %% Running the filter
 tstim_index = 1;
 tgps_index = 1;
