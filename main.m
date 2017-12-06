@@ -3,6 +3,7 @@
 load('E:\Visnav Flight Data\20170815_DPG_Flight1\all.mat');
 % Get pos = [x y z], and tgps.
 [pos, tgps] = load_gps_meters(gps);
+xm = pos(:, 1); ym = pos(:, 2); zm = pos(:, 3);
 % Get acceleration and angular rates from the imu as well as the times.
 [acc_imu, w_imu, timu] = load_acc_gyro_imu(imu);
 [acc_stim, w_stim, tstim] = load_acc_gyro_stim(stim);
@@ -13,39 +14,40 @@ load('E:\Visnav Flight Data\20170815_DPG_Flight1\all.mat');
 % Y = RPY_measurements(acc_stim, pos, tgps, tstim);
 % Here we create velocity and acceleration measurements using the GPS
 % position measurements.
-%tgps = tgps(5150:end);
-%tstim = tstim(130245:end);
 ax_stim = acc_stim(:, 1);
-%ax_stim = ax_stim(130425:end);
 ay_stim = acc_stim(:, 2);
-%ay_stim = ay_stim(130425:end);
 az_stim = acc_stim(:, 3);
-%az_stim = az_stim(130425:end);
 acc_stim = [ax_stim ay_stim az_stim];
 [agps, vgps] = vel_and_acc(pos, tgps);
+agps_x = agps(:, 1);
+agps_y = agps(:, 2);
+agps_z = agps(:, 3);
 disp('Number of velocity measurements = '), disp(length(vgps));
 disp('Number of acceleration measurements = '), disp(length(agps));
 vgps_reduced = vgps(2:end-1, :);
 tgps_reduced = tgps(3:end-2);
 %% Running the filter
-tstim_index = 1;
-tgps_index = 1;
+tstim_index = 128845;
+tgps_index = 5100;
 with_measurement = 1;
 % Create an array to store trajectory of the state. Can be used later.
 X = [];
+P = {};
 % Initialize the quaternion state using the first measurement obtained at
 % tgps(1).
 % Obtain the initial estimate from the first measurement of roll pitch and
 % yaw.
-q_init = [0.6191, 0.2736, 0.0635, 0.7334];
+%q_init = [0.6191, 0.2736, 0.0635, 0.7334];
+% Define q_init for 20170815_DPG_Flight1 at tgps_index = 5100
+q_init = [0.4167, -0.0188, 0.0857, -0.9048];
 x_pred = [q_init 0 0 0]'; 
 P_pred = diag([0.1 0.1 0.1 0.1 0 0 0]); % Taken from references of the paper
 
-while(tstim_index < length(tstim) - 1)
+while(tstim_index < length(tstim) + 1)
     tstim_curr = tstim(tstim_index); 
     tgps_curr = tgps_reduced(tgps_index);
     % Check if the stim time has passed the gps time, if yes, then
-    % incorporate the "measurement" which has arrived.
+    % incorporate the "measurement" which has arrived.    
     if(with_measurement == 1)
     if(tstim_curr > tgps_curr)
         %calculate a measurement based on average astim at tstim_index and
@@ -79,6 +81,7 @@ while(tstim_index < length(tstim) - 1)
     %x_updated = x_pred;
     %P_updated = P_pred;
     X = [X x_updated];
+    P = [P P_updated];
     w_curr = w_stim(tstim_index, :)';
     [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr);
     x_pred = normalize_quaternion(x_pred);

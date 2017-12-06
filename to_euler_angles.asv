@@ -1,0 +1,11 @@
+function [RPY_radian, RPY_deg, b] = to_euler_angles(X)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+qs = X(1, :); qx = X(2, :); qy = X(3, :); qz = X(4, :);
+bx = X(5, :); by = X(6, :); bz = X(7, :);
+roll = atan2( (2*(qy.*qz + qs.*qx)), (1- 2*(qx.^2 + qy.^2)) );
+roll_deg = rad2deg(roll);
+pitch = asin( -2*(qx.*qz - qs.*qy) );
+pitch_deg = rad2deg(pitch);
+end
+
