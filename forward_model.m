@@ -43,9 +43,9 @@ w_rev(3) = -w_rev(3);
 % Form the omega matrix
 omega = 0.5*[skew_matrix w_rev; -w_rev' 0];
 
-% Implement the forward model equations
-q_curr = q_prev + omega*q_prev*dt; %+ n_q; % Is there n_q here?
-b_curr = b_prev; %+ n_b;
+% Implement the forward model equations using euler integration
+q_curr = q_prev + omega*q_prev*dt; 
+b_curr = b_prev; 
 % Implement the propagation of covariance matrix
 A = get_jacobian(x_prev, w);
 %Define the  state transition matrix using taylor series approximation

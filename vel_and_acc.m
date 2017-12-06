@@ -17,7 +17,6 @@ vx = diff(xm) ./ diff(t(1:end));
 vy = diff(ym) ./ diff(t(1:end));
 vz = diff(zm) ./ diff(t(1:end));
 avg_vx = mean([vx(1:end-1)';vx(2:end)'])';
-%Like avg_vx = [avg_vx(1) avg_vx avg_vx(end)]; ?
 avg_vy = mean([vy(1:end-1)';vy(2:end)'])';
 avg_vz = mean([vz(1:end-1)';vz(2:end)'])';
 % After differencing and averaging velocities we lose the acceleration at two
@@ -28,8 +27,8 @@ az = diff(avg_vz) ./ diff(t(2:end-1));
 avg_ax = mean([ax(1:end-1)';ax(2:end)'])';
 avg_ay = mean([ay(1:end-1)';ay(2:end)'])';
 avg_az = mean([az(1:end-1)';az(2:end)'])';
-%Similarly we lose another two for acceleration, two
-%from the end. % We can maybe make some assumption of the acceleration at
+%Similarly we lose another two for acceleration, one
+%from the end and one from the start. % We can maybe make some assumption of the acceleration at
 %those times.
 vgps = [avg_vx avg_vy avg_vz];
 agps = [avg_ax avg_ay avg_az];
