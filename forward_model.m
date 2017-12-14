@@ -1,4 +1,4 @@
-function [x_curr, P_curr] = forward_model(x_prev, P_prev, w)
+function [x_curr, P_curr] = forward_model(x_prev, P_prev, w, SQRT)
 %forward_model: This function is used to march the model forward in time to
 %obtain estimates of the attitude and gyroscope bias at required times.
 % Parameters (to be defined):
@@ -27,13 +27,16 @@ function [x_curr, P_curr] = forward_model(x_prev, P_prev, w)
 % b(k) = [bx by bz]'
 % n_q(k) = process noise vector for q(k)
 % n_b(k) = process noise vector for b(k)
-Q = 1e-2*eye(7);
+Q = 0.1*eye(7);
+Sw = chol(Q, 'lower');
 dt = 0.004;
+wx = w(1); wy = w(2); wz = w(3); 
 q_prev = x_prev(1:4);
 b_prev = x_prev(5:7);
-%n_prev = mvnrnd(zeros(7,1), Q)'; %Process Noise Vector
-%n_q = n_prev(1:4);
-%n_b = n_prev(5:7);
+bx = b_prev(1); by = b_prev(2); bz = b_prev(3);
+n_prev = mvnrnd(zeros(7,1), Q)'; %Process Noise Vector
+n_q = n_prev(1:4);
+n_b = n_prev(5:7);
 skew_matrix = skew(w, b_prev);
 %The skew matrix is the the first 3 rows and columns of omega
 w_corr = w - b_prev; %The corrected angular rates
@@ -41,8 +44,11 @@ w_corr = w - b_prev; %The corrected angular rates
 w_rev = flipud(w_corr); 
 w_rev(3) = -w_rev(3);
 % Form the omega matrix
-omega = 0.5*[skew_matrix w_rev; -w_rev' 0];
-
+omega1 = 0.5*[skew_matrix w_rev; -w_rev' 0];
+omega = 0.5*[0            -(wx - bx)          -(wy - by)          -(wz - bz);
+                  (wx - bx)    0                   (wz - bz)           -(wy - by);
+                  (wy - by)    -(wz - bz)          0                   (wx - bx);
+                  (wz - bz)    (wy - by)           -(wx - bx)          0];
 % Implement the forward model equations using euler integration
 q_curr = q_prev + omega*q_prev*dt; 
 b_curr = b_prev; 
@@ -51,7 +57,16 @@ A = get_jacobian(x_prev, w);
 %Define the  state transition matrix using taylor series approximation
 F = eye(7) + A*dt;
 %P_curr = F*P_prev*F' + Q*dt % Should this be P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt??
-P_curr = P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt
+if(SQRT == 1)
+    eig(P_prev)                                                                                                                                                                                                                                                                          
+    W = chol(P_prev, 'lower');    
+    %P_curr = W*W' + dt*A*(W*W') + dt*(W*W')*A' + (Sw*Sw')*dt
+    P_curr = F*(W*W')*F' + Q
+else
+    %P_curr = P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt
+    P_curr = F*P_prev*F' + Q
+end
+% P_curr = 0.5*(P_curr + P_curr'); % To maintain positive definiteness
 x_curr = [q_curr; b_curr];
 
 

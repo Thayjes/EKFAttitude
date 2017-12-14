@@ -1,12 +1,14 @@
 %% LOAD DATA
 % Load the gps and imu tables.
-load('E:\Visnav Flight Data\20170815_DPG_Flight1\all.mat');
+load('F:\Visnav Flight Data\20170815_DPG_Flight1\all.mat');
 % Get pos = [x y z], and tgps.
 [pos, tgps] = load_gps_meters(gps);
 xm = pos(:, 1); ym = pos(:, 2); zm = pos(:, 3);
 % Get acceleration and angular rates from the imu as well as the times.
 [acc_imu, w_imu, timu] = load_acc_gyro_imu(imu);
 [acc_stim, w_stim, tstim] = load_acc_gyro_stim(stim);
+ir = table2array(ir);
+tir = ir(:, 1);
 %% MEASUREMENTS
 % Calculate the measurements in the form
 % Y = [roll pitch heading t], so at each time we can obtain a measurement
@@ -30,6 +32,9 @@ tgps_reduced = tgps(3:end-2);
 tstim_index = 128845;
 tgps_index = 5100;
 with_measurement = 1;
+% Variable to indicate whether to implement forward and update equations in
+% square root form or not
+SQRT = 0;
 % Create an array to store trajectory of the state. Can be used later.
 X = [];
 P = {};
@@ -41,9 +46,8 @@ P = {};
 % Define q_init for 20170815_DPG_Flight1 at tgps_index = 5100
 q_init = [0.4167, -0.0188, 0.0857, -0.9048];
 x_pred = [q_init 0 0 0]'; 
-P_pred = diag([0.1 0.1 0.1 0.1 0 0 0]); % Taken from references of the paper
-
-while(tstim_index < length(tstim) + 1)
+P_pred = diag([0.1 0.1 0.1 0.1 0.1 1e-1 1e-1]); % Taken from references of the paper
+while(tstim_index < 228921)
     tstim_curr = tstim(tstim_index); 
     tgps_curr = tgps_reduced(tgps_index);
     % Check if the stim time has passed the gps time, if yes, then
@@ -58,9 +62,11 @@ while(tstim_index < length(tstim) + 1)
         if(sum(y ~= 0))                        
             [ y_pred ] = measurement_model(x_pred);
             % Update our estimate using the measurement
-            [x_updated, P_updated] = EKF_Update(x_pred, P_pred, y_pred, y);
+            [x_updated, P_updated] = EKF_Update(x_pred, P_pred, y_pred, y, SQRT);
             x_updated = normalize_quaternion(x_updated);
-            tgps_index = tgps_index + 1;
+            if(tgps_index < length(tgps))
+                tgps_index = tgps_index + 1;
+            end
             disp('The updated estimate is : '), disp(x_updated);
         else
             % Our best estimate is simply our prediction
@@ -69,7 +75,9 @@ while(tstim_index < length(tstim) + 1)
             P_updated = P_pred;
             % And we increment our tgps index as this measurement was not
             % good
-            tgps_index = tgps_index + 1;
+            if(tgps_index < length(tgps))
+                tgps_index = tgps_index + 1;
+            end
         end
     else
         % Our best estimate is simply our prediction
@@ -77,14 +85,21 @@ while(tstim_index < length(tstim) + 1)
         x_updated = normalize_quaternion(x_updated);
         P_updated = P_pred;
     end
+    else
+        x_updated = x_pred;
+        P_updated = P_pred;
     end
     %x_updated = x_pred;
     %P_updated = P_pred;
     X = [X x_updated];
     P = [P P_updated];
     w_curr = w_stim(tstim_index, :)';
-    [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr);
+    [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr, SQRT);
+    if(any(diag(P_pred) < 0) || any(eig(P_pred) < 0))
+        disp('Diagonal element of covariance matrix has become negative!');
+    end
     x_pred = normalize_quaternion(x_pred);
     tstim_index = tstim_index + 1;
-    disp('The predicted estimate is: '), disp(x_pred);        
+    disp('The predicted estimate is: '), disp(x_pred); 
+    tstim_index
 end

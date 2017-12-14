@@ -1,4 +1,4 @@
-function [RPY_radian, RPY_deg, b] = to_euler_angles(X)
+function [yaw_deg, roll_deg, pitch_deg] = to_euler_angles(X)
 %to_euler_angles Takes the state trajectory and extracts roll, pitch, yaw
 % in radians and degrees. Also extracts the gyroscope bias estimates.
 %   Detailed explanation goes here

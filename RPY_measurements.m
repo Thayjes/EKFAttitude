@@ -1,4 +1,4 @@
-function [ Y ] = RPY_measurements(acc_stim, pos, tgps, tstim)
+function [Y, yaw_measured, roll_measured, pitch_measured] = RPY_measurements(acc_stim, pos, tgps, tstim)
 %UNTITLED11 Summary of this function goes here
 %   Detailed explanation goes here
 % acc is undefined, t is undefined
@@ -32,6 +32,9 @@ while(tstim_index < length(tstim) - 1)
         break
     end
 end
+yaw_measured = rad2deg(Y(:, 3));
+roll_measured = rad2deg(Y(:, 1));
+pitch_measured = rad2deg(Y(:, 2));
 a = Y(:, 3);
 complex = find(a == 0);
 disp('The number of complex measurements is: '); disp(length(complex));
