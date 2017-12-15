@@ -6,7 +6,7 @@ function [ x_updated, P_updated ] = EKF_Update(x_curr, P_curr, y_hat, y_curr, SQ
 %1. R: Measurement Noise Covariance Matrix
 dt = 0.004;
 cholesky = 0;
-R = 0.1*eye(3) / dt; %Might have to decrease this
+R = 0.001*eye(3) / dt; %Might have to decrease this
 H = get_H_jacobian(x_curr); %%Check the jacobian, imaginary values?
 if(~isreal(H))
     disp('Matrix Jacobian of measurement is complex!');

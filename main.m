@@ -35,6 +35,8 @@ with_measurement = 1;
 % Variable to indicate whether to implement forward and update equations in
 % square root form or not
 SQRT = 0;
+% Variable to indicate whether there will be process noise in q or not
+q_noise = 0;
 % Create an array to store trajectory of the state. Can be used later.
 X = [];
 P = {};
@@ -46,7 +48,7 @@ P = {};
 % Define q_init for 20170815_DPG_Flight1 at tgps_index = 5100
 q_init = [0.4167, -0.0188, 0.0857, -0.9048];
 x_pred = [q_init 0 0 0]'; 
-P_pred = diag([0.1 0.1 0.1 0.1 0.1 1e-1 1e-1]); % Taken from references of the paper
+P_pred = diag([0.1 0.1 0.1 0.1 1e-2 1e-2 1e-2]); % Taken from references of the paper
 while(tstim_index < 228921)
     tstim_curr = tstim(tstim_index); 
     tgps_curr = tgps_reduced(tgps_index);
@@ -94,7 +96,7 @@ while(tstim_index < 228921)
     X = [X x_updated];
     P = [P P_updated];
     w_curr = w_stim(tstim_index, :)';
-    [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr, SQRT);
+    [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr, SQRT, q_noise);
     if(any(diag(P_pred) < 0) || any(eig(P_pred) < 0))
         disp('Diagonal element of covariance matrix has become negative!');
     end
