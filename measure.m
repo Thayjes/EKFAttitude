@@ -1,4 +1,4 @@
-function [y_curr] = measure(tgps_index, tstim_index, vgps, agps, astim)
+function [y_curr] = measure(tgps_index, tstim_index, vgps, agps, astim, model_number)
 %measure This function is used to generate euler angle measurements
 %based on the GPS, Accelerometer and Gyroscope data. These measurements
 %will be used in the EKF update step.
@@ -44,6 +44,12 @@ if(isreal(sigma_theta))
 else
     disp('Sigma_Theta is complex!');
     y_curr = [0;0;0];
+end
+if(model_number == 2 && (sum(y_curr) ~= 0))
+    y_curr = toQuaternion(pitch, roll, heading);
+end
+if(model_number == 2 && (sum(y_curr) == 0))
+    y_curr = [0;0;0;0];
 end
 
 end

@@ -1,4 +1,4 @@
-function [x_curr, P_curr] = forward_model(x_prev, P_prev, w, SQRT, q_noise)
+function [x_curr, P_curr] = forward_model(x_prev, P_prev, w, SQRT, q_noise, b_noise)
 %forward_model: This function is used to march the model forward in time to
 %obtain estimates of the attitude and gyroscope bias at required times.
 % Parameters (to be defined):
@@ -22,7 +22,7 @@ function [x_curr, P_curr] = forward_model(x_prev, P_prev, w, SQRT, q_noise)
 % b(k+1) = b(k) + n_b(k)
 % UPDATED_EQUATIONS
 % x(k+1) = Ad*x(k) + G*B*n(k)
-% Where Ad = eye(7) + A*dt , A is the jacobian of f(x, w) at x(k), w(k).
+% Where Ad = eye(7) + A*dt , A is the jacobian of f(x, w) at (x(k), w(k)).
 % G = (eye(7)*dt + A*(dt^2/2))
 % B = eye(7) or [0; I] depending on q_noise
 
@@ -37,11 +37,15 @@ function [x_curr, P_curr] = forward_model(x_prev, P_prev, w, SQRT, q_noise)
 % b(k) = [bx by bz]'
 % n_q(k) = process noise vector for q(k)
 % n_b(k) = process noise vector for b(k)
-Q = 1e-3*diag([1 1 1 1 1e-2 1e-2 1e-2]);
-if(q_noise == 0)
+Q = 1*diag([1e-2 1e-2 1e-2 1e-2 1e-2 1e-2 1e-2]);
+if(q_noise == 0 && b_noise == 1)
     B = [zeros(4, 7); zeros(3, 4), eye(3)];
-else
+end
+if(q_noise == 1 && b_noise == 1)
     B = eye(7);
+end
+if(q_noise == 0 && b_noise == 0)
+    B = zeros(7, 7);
 end
 dt = 0.004;
 wx = w(1); wy = w(2); wz = w(3); 
@@ -69,6 +73,11 @@ x_curr = (eye(7) + [omega, zeros(4,3); zeros(3, 7)]*dt)*x_prev + G*B*n_prev;
 %(q_curr - x_curr(1:4));
 % Implement the propagation of covariance matrix
 %P_curr = F*P_prev*F' + Q*dt % Should this be P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt??
+if(B == zeros(7, 7))
+    Qfinal = Q;
+else
+    Qfinal = Qk;
+end
 if(SQRT == 1)
     eig(P_prev)                                                                                                                                                                                                                                                                          
     W = chol(P_prev, 'lower');   
@@ -77,7 +86,7 @@ if(SQRT == 1)
     P_curr = F*(W*W')*F' + Qk
 else
     %P_curr = P_prev + dt*A*P_prev + dt*P_prev*A' + Q*dt
-    P_curr = F*P_prev*F' + Qk
+    P_curr = F*P_prev*F' + Qfinal
 end
 % P_curr = 0.5*(P_curr + P_curr'); % To maintain positive definiteness
 % x_curr = [q_curr; b_curr];

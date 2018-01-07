@@ -1,4 +1,4 @@
-function [Y, yaw_measured, roll_measured, pitch_measured] = RPY_measurements(acc_stim, pos, tgps, tstim)
+function [Y, yaw_measured, roll_measured, pitch_measured] = RPY_measurements(acc_stim, pos, tgps, tstim, model_number)
 %UNTITLED11 Summary of this function goes here
 %   Detailed explanation goes here
 % acc is undefined, t is undefined
@@ -22,8 +22,10 @@ while(tstim_index < length(tstim) - 1)
         %calculate a measurement based on average astim at tstim_index and
         %tstim_index - 1
         % y = [roll pitch yaw]'
-        [y] = measure(tgps_index, tstim_index, vgps_reduced, agps, acc_stim); 
-        Y = [Y; y' tgps_index];
+        [y] = measure(tgps_index, tstim_index, vgps_reduced, agps, acc_stim, model_number);
+        if(sum(y)~=0)
+            Y = [Y; y' tgps_index];
+        end
         tgps_index = tgps_index + 1;
     else
         tstim_index = tstim_index + 1;

@@ -1,4 +1,4 @@
-function [ x_updated, P_updated ] = EKF_Update(x_curr, P_curr, y_hat, y_curr, SQRT)
+function [ x_updated, P_updated ] = EKF_Update(x_curr, P_curr, y_hat, y_curr, SQRT, model_number)
 %EKF_Update This function uses a measurement to update the current estimate
 %of the state.
 %   Detailed explanation goes here
@@ -6,8 +6,12 @@ function [ x_updated, P_updated ] = EKF_Update(x_curr, P_curr, y_hat, y_curr, SQ
 %1. R: Measurement Noise Covariance Matrix
 dt = 0.004;
 cholesky = 0;
-R = 0.001*eye(3) / dt; %Might have to decrease this
-H = get_H_jacobian(x_curr); %%Check the jacobian, imaginary values?
+if(model_number == 1)
+    R = 0.001*eye(3) / dt;
+else
+    R = 0.001*eye(4)/dt;
+end
+H = get_H_jacobian(x_curr, model_number); %%Check the jacobian, imaginary values?
 if(~isreal(H))
     disp('Matrix Jacobian of measurement is complex!');
 end
@@ -36,7 +40,7 @@ else
         K = P_curr*H'/S;
     end
 end
-n_v = mvnrnd(zeros(3,1), R)';
+%n_v = mvnrnd(zeros(3,1), R)';
 x_updated = double(x_curr + K*(y_curr - y_hat));
 % Use joseph form of covariance update
 if(SQRT == 1)

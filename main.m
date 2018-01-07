@@ -16,6 +16,7 @@ tir = ir(:, 1);
 % Y = RPY_measurements(acc_stim, pos, tgps, tstim);
 % Here we create velocity and acceleration measurements using the GPS
 % position measurements.
+[acc_stim, w_stim, tstim] = load_acc_gyro_stim(stim);
 ax_stim = acc_stim(:, 1);
 ay_stim = acc_stim(:, 2);
 az_stim = acc_stim(:, 3);
@@ -32,11 +33,16 @@ tgps_reduced = tgps(3:end-2);
 tstim_index = 128845;
 tgps_index = 5100;
 with_measurement = 1;
+% Variable to indicate whether to use euler angles (1) as measurements or
+% quaternion values (2)
+model_number = 2;
 % Variable to indicate whether to implement forward and update equations in
 % square root form or not
 SQRT = 0;
 % Variable to indicate whether there will be process noise in q or not
 q_noise = 0;
+% Variable to indicate whether there will be process noise in b or not
+b_noise = 0;
 % Create an array to store trajectory of the state. Can be used later.
 X = [];
 P = {};
@@ -49,6 +55,8 @@ P = {};
 q_init = [0.4167, -0.0188, 0.0857, -0.9048];
 x_pred = [q_init 0 0 0]'; 
 P_pred = diag([0.1 0.1 0.1 0.1 1e-2 1e-2 1e-2]); % Taken from references of the paper
+stim_index = 0;
+stim_indices = [];
 while(tstim_index < 228921)
     tstim_curr = tstim(tstim_index); 
     tgps_curr = tgps_reduced(tgps_index);
@@ -56,15 +64,17 @@ while(tstim_index < 228921)
     % incorporate the "measurement" which has arrived.    
     if(with_measurement == 1)
     if(tstim_curr > tgps_curr)
+        stim_indices = [stim_indices ; stim_index];
+        stim_index = 0;
         %calculate a measurement based on average astim at tstim_index and
         %tstim_index - 1
         % y = [roll pitch yaw]'
-        [y] = measure(tgps_index, tstim_index, vgps_reduced, agps, acc_stim);
+        [y] = measure(tgps_index, tstim_index, vgps_reduced, agps, acc_stim, model_number);        
         % Only if we can obtain a measurement then we run an update
         if(sum(y ~= 0))                        
-            [ y_pred ] = measurement_model(x_pred);
+            [ y_pred ] = measurement_model(x_pred, model_number);
             % Update our estimate using the measurement
-            [x_updated, P_updated] = EKF_Update(x_pred, P_pred, y_pred, y, SQRT);
+            [x_updated, P_updated] = EKF_Update(x_pred, P_pred, y_pred, y, SQRT, model_number);
             x_updated = normalize_quaternion(x_updated);
             if(tgps_index < length(tgps))
                 tgps_index = tgps_index + 1;
@@ -96,12 +106,13 @@ while(tstim_index < 228921)
     X = [X x_updated];
     P = [P P_updated];
     w_curr = w_stim(tstim_index, :)';
-    [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr, SQRT, q_noise);
+    [x_pred, P_pred] = forward_model(x_updated, P_updated, w_curr, SQRT, q_noise, b_noise);
     if(any(diag(P_pred) < 0) || any(eig(P_pred) < 0))
         disp('Diagonal element of covariance matrix has become negative!');
     end
     x_pred = normalize_quaternion(x_pred);
     tstim_index = tstim_index + 1;
+    stim_index = stim_index + 1;
     disp('The predicted estimate is: '), disp(x_pred); 
     tstim_index
 end
